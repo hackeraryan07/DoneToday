@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,8 +19,10 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel) {
-    val tasks by viewModel.tasks.collectAsState()
+fun HomeScreen(viewModel: MainViewModel, onNavigateHistory: () -> Unit) {
+    val allTasks by viewModel.tasks.collectAsState()
+    val tasks = remember(allTasks) { allTasks.filter { com.example.DateUtils.isToday(it.timestamp) } }
+    
     var showAddDialog by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<TaskItem?>(null) }
 
@@ -29,7 +32,12 @@ fun HomeScreen(viewModel: MainViewModel) {
                 title = { Text("What I Did Today") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                ),
+                actions = {
+                    IconButton(onClick = onNavigateHistory) {
+                        Icon(androidx.compose.material.icons.Icons.Default.History, contentDescription = "History")
+                    }
+                }
             )
         },
         floatingActionButton = {

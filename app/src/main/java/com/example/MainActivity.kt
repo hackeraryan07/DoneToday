@@ -89,7 +89,20 @@ class MainActivity : ComponentActivity() {
                                 })
                             }
                             composable("home") {
-                                HomeScreen(viewModel)
+                                HomeScreen(
+                                    viewModel = viewModel,
+                                    onNavigateHistory = {
+                                        navController.navigate("history")
+                                    }
+                                )
+                            }
+                            composable("history") {
+                                com.example.ui.screens.HistoryScreen(
+                                    viewModel = viewModel,
+                                    onNavigateBack = {
+                                        navController.popBackStack()
+                                    }
+                                )
                             }
                         }
                     }

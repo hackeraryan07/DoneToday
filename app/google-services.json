@@ -12,7 +12,20 @@
           "package_name": "com.abn.donetoday"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "219518783433-12rjutlkhg0ht7osdvt170jcipvmn6ju.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abn.donetoday",
+            "certificate_hash": "2a30c3d088baea5058277b1d08437e7c33558872"
+          }
+        },
+        {
+          "client_id": "219518783433-90nrdoc98eghqi7k0i08a3d69ml89n61.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBaz-8gnxvwjb2nFEHKc-UqJbx5lsBIYJY"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "219518783433-90nrdoc98eghqi7k0i08a3d69ml89n61.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

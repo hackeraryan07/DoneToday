@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219518783433",
+    "project_id": "task-done-today",
+    "storage_bucket": "task-done-today.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219518783433:android:cad8ef2f21bafb0c936218",
+        "android_client_info": {
+          "package_name": "com.abn.donetoday"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaz-8gnxvwjb2nFEHKc-UqJbx5lsBIYJY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

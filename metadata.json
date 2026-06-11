@@ -1,0 +1,6 @@
+{
+  "name": "Done Today",
+  "description": "An application to track and save the tasks you have done today.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

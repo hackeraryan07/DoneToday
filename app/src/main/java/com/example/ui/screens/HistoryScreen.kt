@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,9 +25,31 @@ import com.example.TaskItem
 fun HistoryScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
     val allTasks by viewModel.tasks.collectAsState()
     val historyTasks = remember(allTasks) { allTasks.filter { !DateUtils.isToday(it.timestamp) } }
-    val groupedTasks = remember(historyTasks) { historyTasks.groupBy { DateUtils.formatDate(it.timestamp) } }
+    
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredTasks = remember(historyTasks, searchQuery) {
+        if (searchQuery.isBlank()) {
+            historyTasks
+        } else {
+            historyTasks.filter {
+                it.text.contains(searchQuery, ignoreCase = true) ||
+                DateUtils.formatDate(it.timestamp).contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+    val groupedTasks = remember(filteredTasks) { filteredTasks.groupBy { DateUtils.formatDate(it.timestamp) } }
 
     var expandedDates by remember { mutableStateOf(setOf<String>()) }
+    
+    // Automatically expand dates that match the search query or contain tasks matching the search query
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            expandedDates = groupedTasks.keys.toSet()
+        } else {
+            expandedDates = setOf()
+        }
+    }
+
     var taskToEdit by remember { mutableStateOf<TaskItem?>(null) }
 
     Scaffold(
@@ -43,24 +67,49 @@ fun HistoryScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
             )
         }
     ) { padding ->
-        if (groupedTasks.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "You don't have any older tasks saved.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search by keyword or date") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                groupedTasks.forEach { (dateStr, dateTasks) ->
+            )
+
+            if (groupedTasks.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        if (searchQuery.isNotBlank()) "No tasks match your search." else "You don't have any older tasks saved.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    groupedTasks.forEach { (dateStr, dateTasks) ->
                     item(key = dateStr) {
                         val isExpanded = expandedDates.contains(dateStr)
                         Card(
@@ -103,10 +152,11 @@ fun HistoryScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
                             }
                         }
                     }
-                }
-            }
-        }
-    }
+                } // end forEach
+            } // end LazyColumn
+        } // end else block
+        } // end Column block
+    } // end Scaffold body
 
     if (taskToEdit != null) {
         TaskDialog(

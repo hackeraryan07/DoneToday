@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
@@ -19,7 +20,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel, onNavigateHistory: () -> Unit) {
+fun HomeScreen(viewModel: MainViewModel, onNavigateHistory: () -> Unit, onNavigateTodo: () -> Unit) {
     val allTasks by viewModel.tasks.collectAsState()
     val tasks = remember(allTasks) { allTasks.filter { com.example.DateUtils.isToday(it.timestamp) } }
     
@@ -34,8 +35,11 @@ fun HomeScreen(viewModel: MainViewModel, onNavigateHistory: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 actions = {
+                    IconButton(onClick = onNavigateTodo) {
+                        Icon(Icons.Default.Checklist, contentDescription = "Todo List")
+                    }
                     IconButton(onClick = onNavigateHistory) {
-                        Icon(androidx.compose.material.icons.Icons.Default.History, contentDescription = "History")
+                        Icon(Icons.Default.History, contentDescription = "History")
                     }
                 }
             )

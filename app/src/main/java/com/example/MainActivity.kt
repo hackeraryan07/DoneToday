@@ -93,11 +93,22 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onNavigateHistory = {
                                         navController.navigate("history")
+                                    },
+                                    onNavigateTodo = {
+                                        navController.navigate("todo")
                                     }
                                 )
                             }
                             composable("history") {
                                 com.example.ui.screens.HistoryScreen(
+                                    viewModel = viewModel,
+                                    onNavigateBack = {
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
+                            composable("todo") {
+                                com.example.ui.screens.TodoScreen(
                                     viewModel = viewModel,
                                     onNavigateBack = {
                                         navController.popBackStack()

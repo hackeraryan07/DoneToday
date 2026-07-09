@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -154,7 +155,11 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
 
 @Composable
 fun TodoCard(todo: TodoItem, onCompleteClick: () -> Unit, onDelete: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (todo.isCompleted) 0.5f else 1f)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -170,12 +175,13 @@ fun TodoCard(todo: TodoItem, onCompleteClick: () -> Unit, onDelete: () -> Unit) 
                 Text(
                     text = todo.text,
                     style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else null
                 )
                 Text(
                     text = "Scheduled: ${DateUtils.formatDate(todo.scheduledDate)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else null
                 )
             }
             IconButton(onClick = onDelete) {

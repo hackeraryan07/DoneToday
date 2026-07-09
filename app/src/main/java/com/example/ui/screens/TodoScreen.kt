@@ -45,10 +45,10 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
     
     val todayEnd = todayStart + 24 * 60 * 60 * 1000 - 1
     
-    val pendingTodos = allTodos.filter { !it.isCompleted && it.scheduledDate < todayStart }
-    val todayTodos = allTodos.filter { !it.isCompleted && it.scheduledDate in todayStart..todayEnd }
-    val futureTodos = allTodos.filter { !it.isCompleted && it.scheduledDate > todayEnd }
-    val completedTodos = allTodos.filter { it.isCompleted } // Optional to show
+    val pendingTodos = allTodos.filter { !it.completed && it.scheduledDate < todayStart }
+    val todayTodos = allTodos.filter { !it.completed && it.scheduledDate in todayStart..todayEnd }
+    val futureTodos = allTodos.filter { !it.completed && it.scheduledDate > todayEnd }
+    val completedTodos = allTodos.filter { it.completed } // Optional to show
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Today", "Pending", "Future")

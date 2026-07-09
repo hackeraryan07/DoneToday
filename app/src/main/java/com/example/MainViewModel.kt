@@ -19,7 +19,7 @@ data class TodoItem(
     val id: String = "",
     val text: String = "",
     val scheduledDate: Long = 0L,
-    val isCompleted: Boolean = false,
+    val completed: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -104,7 +104,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val user = auth.currentUser ?: return
         // Mark as completed
         db.collection("users").document(user.uid).collection("todos").document(todo.id)
-            .update("isCompleted", true)
+            .update("completed", true)
         
         // Add to 'What I Did Today' (TaskItem)
         val taskId = UUID.randomUUID().toString()

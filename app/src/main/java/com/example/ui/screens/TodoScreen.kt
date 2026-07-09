@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -31,6 +32,8 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
     
     var showAddDialog by remember { mutableStateOf(false) }
     var todoToComplete by remember { mutableStateOf<TodoItem?>(null) }
+    var todoToEdit by remember { mutableStateOf<TodoItem?>(null) }
+    var showCompletedToday by remember { mutableStateOf(false) }
     
     // Filtering
     val todayStart = Calendar.getInstance().apply {
@@ -101,19 +104,28 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
                         TodoCard(
                             todo = todo,
                             onCompleteClick = { todoToComplete = todo },
+                            onEditClick = { todoToEdit = todo },
                             onDelete = { viewModel.deleteTodo(todo.id) }
                         )
                     }
                     if (selectedTab == 0 && completedTodos.any { it.scheduledDate in todayStart..todayEnd }) {
                         item {
-                            Text("Completed Today", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(vertical = 8.dp))
+                            OutlinedButton(
+                                onClick = { showCompletedToday = !showCompletedToday },
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                            ) {
+                                Text(if (showCompletedToday) "Hide Completed Tasks" else "View Completed Tasks")
+                            }
                         }
-                        items(completedTodos.filter { it.scheduledDate in todayStart..todayEnd }, key = { it.id }) { todo ->
-                            TodoCard(
-                                todo = todo,
-                                onCompleteClick = { },
-                                onDelete = { viewModel.deleteTodo(todo.id) }
-                            )
+                        if (showCompletedToday) {
+                            items(completedTodos.filter { it.scheduledDate in todayStart..todayEnd }, key = { it.id }) { todo ->
+                                TodoCard(
+                                    todo = todo,
+                                    onCompleteClick = null,
+                                    onEditClick = null,
+                                    onDelete = { viewModel.deleteTodo(todo.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -123,10 +135,24 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
 
     if (showAddDialog) {
         TodoAddDialog(
+            initialText = "",
+            initialDateMillis = null,
             onDismiss = { showAddDialog = false },
             onSave = { text, date ->
                 viewModel.addTodo(text, date)
                 showAddDialog = false
+            }
+        )
+    }
+
+    if (todoToEdit != null) {
+        TodoAddDialog(
+            initialText = todoToEdit!!.text,
+            initialDateMillis = todoToEdit!!.scheduledDate,
+            onDismiss = { todoToEdit = null },
+            onSave = { text, date ->
+                viewModel.updateTodo(todoToEdit!!.id, text, date)
+                todoToEdit = null
             }
         )
     }
@@ -154,35 +180,35 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
 }
 
 @Composable
-fun TodoCard(todo: TodoItem, onCompleteClick: () -> Unit, onDelete: () -> Unit) {
+fun TodoCard(todo: TodoItem, onCompleteClick: (() -> Unit)?, onEditClick: (() -> Unit)?, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(if (todo.isCompleted) 0.5f else 1f)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(
-                selected = todo.isCompleted,
-                onClick = {
-                    if (!todo.isCompleted) onCompleteClick()
-                }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = todo.text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else null
+                    style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
                     text = "Scheduled: ${DateUtils.formatDate(todo.scheduledDate)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else null
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            if (onCompleteClick != null) {
+                IconButton(onClick = onCompleteClick) {
+                    Icon(Icons.Default.Check, contentDescription = "Complete", tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+            if (onEditClick != null) {
+                IconButton(onClick = onEditClick) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                }
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
@@ -192,15 +218,24 @@ fun TodoCard(todo: TodoItem, onCompleteClick: () -> Unit, onDelete: () -> Unit) 
 }
 
 @Composable
-fun TodoAddDialog(onDismiss: () -> Unit, onSave: (String, Long) -> Unit) {
-    var text by remember { mutableStateOf("") }
+fun TodoAddDialog(
+    initialText: String = "",
+    initialDateMillis: Long? = null,
+    onDismiss: () -> Unit,
+    onSave: (String, Long) -> Unit
+) {
+    var text by remember { mutableStateOf(initialText) }
     val context = LocalContext.current
     
     val calendar = Calendar.getInstance()
-    calendar.set(Calendar.HOUR_OF_DAY, 0)
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
+    if (initialDateMillis != null) {
+        calendar.timeInMillis = initialDateMillis
+    } else {
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+    }
     
     var selectedDateMillis by remember { mutableLongStateOf(calendar.timeInMillis) }
 
@@ -219,7 +254,7 @@ fun TodoAddDialog(onDismiss: () -> Unit, onSave: (String, Long) -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New To-Do") },
+        title = { Text(if (initialText.isEmpty()) "New To-Do" else "Edit To-Do") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedCard(

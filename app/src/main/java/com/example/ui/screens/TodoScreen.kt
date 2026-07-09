@@ -84,9 +84,9 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
             }
             
             val currentList = when (selectedTab) {
-                0 -> todayTodos
-                1 -> pendingTodos
-                else -> futureTodos
+                0 -> todayTodos.sortedBy { it.completed }
+                1 -> pendingTodos.sortedBy { it.completed }
+                else -> futureTodos.sortedBy { it.completed }
             }
             
             if (currentList.isEmpty()) {
@@ -101,6 +101,7 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
                 ) {
                     items(currentList, key = { it.id }) { todo ->
                         TodoCard(
+                            modifier = Modifier.animateItem(),
                             todo = todo,
                             onCompleteClick = if (todo.completed) null else { { todoToComplete = todo } },
                             onEditClick = if (todo.completed) null else { { todoToEdit = todo } },
@@ -159,9 +160,15 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
 }
 
 @Composable
-fun TodoCard(todo: TodoItem, onCompleteClick: (() -> Unit)?, onEditClick: (() -> Unit)?, onDelete: () -> Unit) {
+fun TodoCard(
+    modifier: Modifier = Modifier,
+    todo: TodoItem,
+    onCompleteClick: (() -> Unit)?,
+    onEditClick: (() -> Unit)?,
+    onDelete: () -> Unit
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .alpha(if (todo.completed) 0.5f else 1f)
     ) {

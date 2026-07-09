@@ -47,6 +47,9 @@ class MainActivity : ComponentActivity() {
                     } else {
                         val startDest = if (pinState.value == null) "setup_pin" else "unlock_pin"
                         
+                        // Check intent for widget actions
+                        var nextRouteFromIntent = if (intent.getStringExtra("tab") == "todo") "todo" else "home"
+                        
                         NavHost(navController = navController, startDestination = startDest) {
                             composable("setup_pin") {
                                 val scope = rememberCoroutineScope()
@@ -55,7 +58,7 @@ class MainActivity : ComponentActivity() {
                                     onPinComplete = { newPin ->
                                         scope.launch {
                                             AppSettings.setPin(this@MainActivity, newPin)
-                                            val nextDest = if (Firebase.auth.currentUser == null) "auth" else "home"
+                                            val nextDest = if (Firebase.auth.currentUser == null) "auth" else nextRouteFromIntent
                                             navController.navigate(nextDest) {
                                                 popUpTo("setup_pin") { inclusive = true }
                                             }
@@ -70,7 +73,7 @@ class MainActivity : ComponentActivity() {
                                     errorMessage = errorMsg,
                                     onPinComplete = { entered ->
                                         if (entered == pinState.value) {
-                                            val nextDest = if (Firebase.auth.currentUser == null) "auth" else "home"
+                                            val nextDest = if (Firebase.auth.currentUser == null) "auth" else nextRouteFromIntent
                                             navController.navigate(nextDest) {
                                                 popUpTo("unlock_pin") { inclusive = true }
                                             }
@@ -83,7 +86,7 @@ class MainActivity : ComponentActivity() {
                             composable("auth") {
                                 AuthScreen(onAuthSuccess = {
                                     viewModel.fetchTasks()
-                                    navController.navigate("home") {
+                                    navController.navigate(nextRouteFromIntent) {
                                         popUpTo("auth") { inclusive = true }
                                     }
                                 })

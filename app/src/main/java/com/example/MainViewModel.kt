@@ -5,6 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.launch
+import androidx.glance.appwidget.updateAll
+import com.example.widget.TodoWidget
+import com.example.widget.DoneWidget
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
@@ -50,6 +55,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { it.toObject(TaskItem::class.java) }
                     _tasks.value = list
+                    
+                    // Update widget
+                    viewModelScope.launch {
+                        try {
+                            DoneWidget().updateAll(getApplication())
+                        } catch (e: Exception) {
+                            // ignore
+                        }
+                    }
                 }
             }
     }
@@ -65,6 +79,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (snapshot != null) {
                     val list = snapshot.documents.mapNotNull { it.toObject(TodoItem::class.java) }
                     _todos.value = list
+
+                    // Update widget
+                    viewModelScope.launch {
+                        try {
+                            TodoWidget().updateAll(getApplication())
+                        } catch (e: Exception) {
+                            // ignore
+                        }
+                    }
                 }
             }
     }

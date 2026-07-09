@@ -97,6 +97,8 @@ dependencies {
   implementation(libs.firebase.firestore)
   implementation(libs.androidx.credentials)
   implementation(libs.androidx.credentials.play.services.auth)
+  implementation(libs.androidx.glance.appwidget)
+  implementation(libs.androidx.glance.material3)
   implementation(libs.googleid)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)

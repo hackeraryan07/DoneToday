@@ -33,7 +33,6 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
     var showAddDialog by remember { mutableStateOf(false) }
     var todoToComplete by remember { mutableStateOf<TodoItem?>(null) }
     var todoToEdit by remember { mutableStateOf<TodoItem?>(null) }
-    var showCompletedToday by remember { mutableStateOf(false) }
     
     // Filtering
     val todayStart = Calendar.getInstance().apply {
@@ -46,7 +45,7 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
     val todayEnd = todayStart + 24 * 60 * 60 * 1000 - 1
     
     val pendingTodos = allTodos.filter { !it.completed && it.scheduledDate < todayStart }
-    val todayTodos = allTodos.filter { !it.completed && it.scheduledDate in todayStart..todayEnd }
+    val todayTodos = allTodos.filter { it.scheduledDate in todayStart..todayEnd }
     val futureTodos = allTodos.filter { !it.completed && it.scheduledDate > todayEnd }
     val completedTodos = allTodos.filter { it.completed } // Optional to show
 
@@ -103,30 +102,10 @@ fun TodoScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit) {
                     items(currentList, key = { it.id }) { todo ->
                         TodoCard(
                             todo = todo,
-                            onCompleteClick = { todoToComplete = todo },
-                            onEditClick = { todoToEdit = todo },
+                            onCompleteClick = if (todo.completed) null else { { todoToComplete = todo } },
+                            onEditClick = if (todo.completed) null else { { todoToEdit = todo } },
                             onDelete = { viewModel.deleteTodo(todo.id) }
                         )
-                    }
-                    if (selectedTab == 0 && completedTodos.any { it.scheduledDate in todayStart..todayEnd }) {
-                        item {
-                            OutlinedButton(
-                                onClick = { showCompletedToday = !showCompletedToday },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                            ) {
-                                Text(if (showCompletedToday) "Hide Completed Tasks" else "View Completed Tasks")
-                            }
-                        }
-                        if (showCompletedToday) {
-                            items(completedTodos.filter { it.scheduledDate in todayStart..todayEnd }, key = { it.id }) { todo ->
-                                TodoCard(
-                                    todo = todo,
-                                    onCompleteClick = null,
-                                    onEditClick = null,
-                                    onDelete = { viewModel.deleteTodo(todo.id) }
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -184,6 +163,7 @@ fun TodoCard(todo: TodoItem, onCompleteClick: (() -> Unit)?, onEditClick: (() ->
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .alpha(if (todo.completed) 0.5f else 1f)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -192,12 +172,14 @@ fun TodoCard(todo: TodoItem, onCompleteClick: (() -> Unit)?, onEditClick: (() ->
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = todo.text,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (todo.completed) TextDecoration.LineThrough else null
                 )
                 Text(
                     text = "Scheduled: ${DateUtils.formatDate(todo.scheduledDate)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textDecoration = if (todo.completed) TextDecoration.LineThrough else null
                 )
             }
             if (onCompleteClick != null) {
